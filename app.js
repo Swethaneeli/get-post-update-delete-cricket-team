@@ -11,7 +11,7 @@ const app = express();
 app.use(express.json());
 
 let db = null;
-const intializeDBAndServer = async () => {
+const initializeDBAndServer = async () => {
   try {
     db = await open({
       filename: dbPath,
@@ -25,9 +25,9 @@ const intializeDBAndServer = async () => {
     process.exit(1);
   }
 };
-intializeDBAndServer();
+initializeDBAndServer();
 
-const convertDbOjectToResponseObject = (dbObject) => {
+const convertDbObjectToResponseObject = (dbObject) => {
   return {
     playerId: dbObject.player_id,
     playerName: dbObject.player_name,
@@ -44,7 +44,7 @@ app.get("/players/", async (request, response) => {
     ORDER BY player_id`;
   const players = await db.all(getPlayersQuery);
   response.send(
-    players.map((eachPlayer) => convertDbOjectToResponseObject(eachPlayer))
+    players.map((eachPlayer) => convertDbObjectToResponseObject(eachPlayer))
   );
 });
 
@@ -54,11 +54,11 @@ app.post("/players/", async (request, response) => {
   const { playerName, jerseyNumber, role } = playerDetails;
   const addPlayerQuery = `
     INSERT INTO 
-    cricket_team (playerName, jerseyNumber, role)
+    cricket_team (player_name, jersey_number, role)
     VALUES (
-        ${playerName},
-        ${jerseyNumber},
-        ${role}
+        '${playerName}',
+        '${jerseyNumber}',
+        '${role}'
     )`;
   const dbResponse = await db.run(addPlayerQuery);
 
@@ -78,16 +78,16 @@ app.get("/players/:playerId/", async (request, response) => {
 
 //
 app.put("/players/:playerId/", async (request, response) => {
+  const { playerName, jerseyNumber, role } = request.body;
   const { playerId } = request.params;
-  const playerDetails = request.body;
-  const { playerName, jerseyNumber, role } = playerDetails;
   const updateQuery = `
     UPDATE cricket_team
     SET 
-    player_id = ${playerId},
-    player_name = ${playerName},
-    jersey_number = ${jerseyNumber},
-    role = ${role}`;
+    player_id = '${playerId}',
+    player_name = '${playerName}',
+    jersey_number = '${jerseyNumber}',
+    role = '${role}'
+    WHERE player_id = ${playerId}`;
   await db.run(updateQuery);
   response.send("Player Details Updated");
 });
